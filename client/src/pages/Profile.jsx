@@ -1,6 +1,6 @@
-import React from "react";
 import { useSelector } from "react-redux";
 import { useRef, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   getDownloadURL,
   getStorage,
@@ -21,6 +21,7 @@ import {
 
 export default function Profile() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const fileRef = useRef(null);
   const [image, setImage] = useState(undefined);
   const [imagePercent, setImagePercent] = useState(0);
@@ -40,7 +41,7 @@ export default function Profile() {
     const storageRef = ref(storage, fileName);
     const uploadTask = uploadBytesResumable(storageRef, image);
     uploadTask.on(
-      "state_changes",
+      "state_changed",
       (snapshot) => {
         const progress =
           (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
@@ -92,9 +93,11 @@ export default function Profile() {
       const data = await res.json();
       if (data.success === false) {
         dispatch(deleteUserFailure(data));
+
         return;
       }
       dispatch(deleteUserSuccess(data));
+      navigate("/sign-in");
     } catch (error) {
       dispatch(deleteUserFailure(error));
     }
@@ -104,12 +107,13 @@ export default function Profile() {
     try {
       await fetch("/api/auth/signout");
       dispatch(signOut());
+      navigate("/sign-in");
     } catch (error) {
       console.log(error);
     }
   };
   return (
-    <div className="p-3 max-w-lg mg-auto">
+    <div className="p-3 max-w-lg mx-auto">
       <h1 className="text-3xl font-semibold text-center my-7">Profile</h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
@@ -119,10 +123,11 @@ export default function Profile() {
           accept="image/*"
           onChange={(e) => setImage(e.target.files[0])}
         />
-        {/* firebase storage rule */}
-        {/* allow read;
-      allow write; if 
-      request.resource.size <2 * 1024 * 1024 &&
+        {/* 
+      firebase storage rules:  
+      allow read;
+      allow write: if
+      request.resource.size < 2 * 1024 * 1024 &&
       request.resource.contentType.matches('image/.*') */}
         <img
           src={formData.profilePicture || currentUser.profilePicture}
@@ -130,7 +135,6 @@ export default function Profile() {
           className="h-24 w-24 self-center cursor-pointer rounded-full object-cover mt-2"
           onClick={() => fileRef.current.click()}
         />
-        <br />
         <p className="text-sm self-center">
           {imageError ? (
             <span className="text-red-700">
@@ -149,29 +153,26 @@ export default function Profile() {
           type="text"
           id="username"
           placeholder="Username"
-          className="bg-state-100 rounded-lg p-3"
+          className="bg-slate-100 rounded-lg p-3"
           onChange={handleChange}
         />
-        <br />
         <input
           defaultValue={currentUser.email}
           type="email"
           id="email"
-          placeholder="email"
-          className="bg-state-100 rounded-lg p-3"
+          placeholder="Email"
+          className="bg-slate-100 rounded-lg p-3"
           onChange={handleChange}
-        />{" "}
-        <br />
+        />
         <input
           type="password"
           id="password"
-          placeholder="password"
-          className="bg-state-100 rounded-lg p-3"
+          placeholder="Password"
+          className="bg-slate-100 rounded-lg p-3"
           onChange={handleChange}
-        />{" "}
-        <br />
+        />
         <button className="bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-80">
-          {loading ? "Loading..." : "update"}
+          {loading ? "Loading..." : "Update"}
         </button>
       </form>
       <div className="flex justify-between mt-5">
@@ -182,12 +183,12 @@ export default function Profile() {
           Delete Account
         </span>
         <span onClick={handleSignOut} className="text-red-700 cursor-pointer">
-          Sign Out
+          Sign out
         </span>
       </div>
-      <p className="text-red-700">{error && "something went wrong"}</p>
-      <p className="text-green-700">
-        {updateSuccess && "user update successfully"}
+      <p className="text-red-700 mt-5">{error && "Something went wrong!"}</p>
+      <p className="text-green-700 mt-5">
+        {updateSuccess && "User is updated successfully!"}
       </p>
     </div>
   );
