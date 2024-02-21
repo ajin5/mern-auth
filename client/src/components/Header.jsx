@@ -24,7 +24,6 @@ export default function Header() {
                 className="h-7 w-7 rounded-full object-cover"
               />
             ) : (
-              // <Link to="/sign-in">Sign In</Link>
               <li>Sign in</li>
             )}
           </Link>
