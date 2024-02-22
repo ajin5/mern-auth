@@ -1,6 +1,5 @@
 import { useSelector } from "react-redux";
 import { useRef, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   getDownloadURL,
   getStorage,
@@ -21,7 +20,6 @@ import {
 
 export default function Profile() {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const fileRef = useRef(null);
   const [image, setImage] = useState(undefined);
   const [imagePercent, setImagePercent] = useState(0);
@@ -93,11 +91,9 @@ export default function Profile() {
       const data = await res.json();
       if (data.success === false) {
         dispatch(deleteUserFailure(data));
-
         return;
       }
       dispatch(deleteUserSuccess(data));
-      navigate("/sign-in");
     } catch (error) {
       dispatch(deleteUserFailure(error));
     }
@@ -107,7 +103,6 @@ export default function Profile() {
     try {
       await fetch("/api/auth/signout");
       dispatch(signOut());
-      navigate("/sign-in");
     } catch (error) {
       console.log(error);
     }
